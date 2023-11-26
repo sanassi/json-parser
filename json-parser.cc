@@ -189,6 +189,9 @@ namespace jsonparse
 
         return token(token_type::END, "");
     }
+
+    ast::ast()
+    {}
 }
 
 int main(void)
