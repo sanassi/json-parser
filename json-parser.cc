@@ -196,9 +196,7 @@ int main(void)
     jsonparse::lexer lexer("{\n \"a\":\"hello\", \n\t \"b\": 3e+4 , \"b\":true    \n}");
     
     while (!lexer.input_stream.eof())
-    {
         std::cout << lexer.next_token();
-    }
     std::cout << std::endl;
 
     return 0;
