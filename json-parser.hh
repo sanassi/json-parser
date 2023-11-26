@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cstddef>
 #include <ostream>
 #include <string>
 #include <map>
 #include <vector>
 #include <sstream>
+#include <variant>
 
 namespace jsonparse
 {
@@ -60,7 +62,6 @@ namespace jsonparse
         std::stringstream input_stream;
     };
 
-    /*
     class ast
     {};
 
@@ -71,7 +72,7 @@ namespace jsonparse
         ast operator [](std::string key);
 
     private:
-        std::map<std::string, ast> values_;
+        std::map<std::string, ast*> values_;
     };
 
     class json_array : public ast
@@ -81,8 +82,14 @@ namespace jsonparse
         ast operator [](int index);
 
     private:
-        std::vector<ast> values_;
+        std::vector<ast*> values_;
     };
-    */
+
+    class json_literal : public ast
+    {
+    public:
+        json_literal();
+        std::variant<int, bool, std::string, std::nullptr_t> value_;
+    };
 
 } // ! jsonparse
