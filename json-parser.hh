@@ -4,6 +4,7 @@
 #include <ostream>
 #include <string>
 #include <map>
+#include <utility>
 #include <vector>
 #include <sstream>
 #include <variant>
@@ -73,9 +74,9 @@ namespace jsonparse
     {
     public:
         json_value() = default;
-        json_value(std::variant<std::vector<json_value*>, std::map<std::string, json_value*>, double, bool, std::nullptr_t, std::string>);
+        json_value(std::variant<std::vector<json_value>, std::map<std::string, json_value>, double, bool, std::nullptr_t, std::string>);
 
-        std::variant<std::vector<json_value*>, std::map<std::string, json_value*>, double, bool, std::nullptr_t, std::string> types_;
+        std::variant<std::vector<json_value>, std::map<std::string, json_value>, double, bool, std::nullptr_t, std::string> types_;
     };
 
     class parser
@@ -83,10 +84,14 @@ namespace jsonparse
     public:
         parser(lexer &lexer);
 
-        json_value *parse_json();
-        json_value *parse_value();
-        json_value *parse_obj();
-        json_value *parse_array();
+        using json_pair = std::pair<std::string, json_value>;
+        using map_type = std::map<std::string, json_value>;
+
+        json_value parse_json();
+        json_value parse_value();
+        json_value parse_obj();
+        json_value parse_array();
+        json_pair parse_pair();
 
         lexer& lexer_get();
 
