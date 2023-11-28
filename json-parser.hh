@@ -70,6 +70,7 @@ namespace jsonparse
         std::stringstream input_stream;
     };
 
+
     class json_value
     {
     public:
@@ -97,6 +98,17 @@ namespace jsonparse
 
     private:
         lexer& lexer_;
+    };
+
+    class json_obj : public json_value
+    {
+    public:
+        json_obj(parser::map_type map);
+
+        json_value& operator[](std::string);
+
+    protected:
+        parser::map_type map_;
     };
 
 } // ! jsonparse

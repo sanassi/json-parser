@@ -315,6 +315,15 @@ namespace jsonparse
         return json_value(map);
     }
 
+    json_obj::json_obj(parser::map_type map)
+        :map_(map)
+    {}
+
+    json_value& json_obj::operator[](std::string key)
+    {
+        return map_[key];
+    }
+
     template<typename T>
     T get(json_value json)
     {
