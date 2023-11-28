@@ -6,6 +6,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <variant>
+#include <vector>
 
 namespace jsonparse
 {
@@ -29,7 +31,9 @@ namespace jsonparse
     lexer::lexer(std::string input)
         : input(input),
           input_stream(std::stringstream(input))
-    {}
+    {
+        current = 0;
+    }
 
     std::ostream& operator<<(std::ostream& os, const token& token)
     {
@@ -58,6 +62,12 @@ namespace jsonparse
     char lexer::look_next_char()
     {
         return input_stream.peek();
+    }
+
+
+    double token::get_value() const
+    {
+        return value_;
     }
 
     token lexer::lex_string()
@@ -148,57 +158,158 @@ namespace jsonparse
 
     token lexer::next_token()
     {
+        token res;
+        if (current < tokens.size())
+        {
+            res = tokens[current];
+            current += 1;
+            return res;
+        }
+
         while (std::isspace(look_next_char()))
             get_next_char();
 
         char c = input_stream.peek();
+
         switch (c)
         {
         case '{':
             get_next_char();
-            return token(token_type::LBRACE, "{");
+            res = token(token_type::LBRACE, "{");
+            break;
         case '}':
             get_next_char();
-            return token(token_type::RBRACE, "}");
+            res = token(token_type::RBRACE, "}");
+            break;
         case '[':
             get_next_char();
-            return token(token_type::LBRACKET, "[");
+            res = token(token_type::LBRACKET, "[");
+            break;
         case ']':
             get_next_char();
-            return token(token_type::RBRACKET, "]");
+            res = token(token_type::RBRACKET, "]");
+            break;
         case ',':
             get_next_char();
-            return token(token_type::COMMA, ",");
+            res = token(token_type::COMMA, ",");
+            break;
         case ':':
             get_next_char();
-            return token(token_type::COLON, ":");
+            res = token(token_type::COLON, ":");
+            break;
         case '\"':
-            return lex_string();
+            res = lex_string();
+            break;
         case '-':
-            return lex_number();
+            res = lex_number();
+            break;
+        case EOF:
+            get_next_char();
+            res = token(token_type::END, "");
+            break;
         default:
             if (std::isdigit(c))
-                return lex_number();
-
-            if (std::isalpha(c))
-                return lex_alpha();
+                res = lex_number();
+            else if (std::isalpha(c))
+                res = lex_alpha();
             break;
         }
 
-        get_next_char();
+        tokens.push_back(res);
+        current += 1;
 
-        return token(token_type::END, "");
+        return res;
+    }
+    
+    token lexer::look_next_token()
+    {
+        token res = next_token();
+
+        if (current > 0)
+            current -= 1;
+
+        return res;
     }
 
+    parser::parser(lexer &lexer)
+        :lexer_(lexer)
+    {}
+
+    lexer& parser::lexer_get() { return lexer_; }
+
+    json_value::json_value(std::variant<std::vector<json_value*>, std::map<std::string, json_value*>, double, bool, std::nullptr_t, std::string> types)
+        :types_(types)
+    {}
+
+    json_value *parser::parse_json()
+    {
+        return parse_value();
+    }
+
+    json_value *parser::parse_array()
+    {
+        lexer_.next_token();
+
+        std::vector<json_value*> data;
+
+        if (lexer_.look_next_token().get_type() == token_type::RBRACKET)
+            return new json_value(data);
+
+        data.push_back(parse_value());
+
+        while (lexer_.look_next_token().get_type() == token_type::COMMA)
+        {
+            lexer_.next_token();
+            data.push_back(parse_value());
+        }
+
+        lexer_.next_token();
+
+        return new json_value(data);
+    }
+
+    json_value *parser::parse_obj()
+    {
+        lexer_.next_token();
+        return {};
+    }
+
+    json_value *parser::parse_value()
+    {
+        json_value *res = new json_value();
+
+        switch (lexer_.look_next_token().get_type()) 
+        {
+            case token_type::STRING:
+                res->types_ = lexer_.next_token().get_lexeme();
+                break;
+            case token_type::NUMBER:
+                res->types_ = lexer_.next_token().get_value();
+                break;
+            case token_type::TRUE:
+            case token_type::FALSE:
+                res->types_ = lexer_.next_token().get_type() == token_type::TRUE;
+                break;
+            case token_type::LBRACKET:
+                return parse_array();
+            case token_type::LBRACE:
+                return parse_obj();
+            default:
+                break;
+        }
+
+        return res;
+    }
 }
 
 int main(void)
 {
-    jsonparse::lexer lexer("{\n \"a\":\"hello\", \n\t \"b\": 3e+4 , \"b\":true    \n}");
-    
-    while (!lexer.input_stream.eof())
-        std::cout << lexer.next_token();
-    std::cout << std::endl;
+    jsonparse::lexer lexer("[1,2, \"hello\", 4]");
+
+    jsonparse::parser p(lexer);
+    auto json = p.parse_json()->types_;
+
+    std::cout << std::get<std::vector<jsonparse::json_value*>>(json).size() << std::endl;
 
     return 0;
 }

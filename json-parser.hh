@@ -30,12 +30,14 @@ namespace jsonparse
     class token
     {
     public:
+        token() = default;
         token(token_type type, std::string lexeme);
         token(token_type type);
         token(token_type type, double value);
 
         const token_type get_type() const;
         const std::string get_lexeme() const;
+        double get_value() const;
 
         friend std::ostream& operator<<(std::ostream& os, const token& token);
 
@@ -51,6 +53,8 @@ namespace jsonparse
         lexer(std::string input);
 
         token next_token();
+        token look_next_token();
+
         token lex_string();
         token lex_number();
         token lex_alpha();
@@ -58,38 +62,36 @@ namespace jsonparse
         char get_next_char();
         char look_next_char();
 
+        std::vector<token> tokens;
+        size_t current;
+
         std::string input;
         std::stringstream input_stream;
     };
 
-    class ast
-    {};
-
-    class json_obj : public ast
+    class json_value
     {
     public:
-        json_obj();
-        ast operator [](std::string key);
+        json_value() = default;
+        json_value(std::variant<std::vector<json_value*>, std::map<std::string, json_value*>, double, bool, std::nullptr_t, std::string>);
 
-    private:
-        std::map<std::string, ast*> values_;
+        std::variant<std::vector<json_value*>, std::map<std::string, json_value*>, double, bool, std::nullptr_t, std::string> types_;
     };
 
-    class json_array : public ast
+    class parser
     {
     public:
-        json_array();
-        ast operator [](int index);
+        parser(lexer &lexer);
+
+        json_value *parse_json();
+        json_value *parse_value();
+        json_value *parse_obj();
+        json_value *parse_array();
+
+        lexer& lexer_get();
 
     private:
-        std::vector<ast*> values_;
-    };
-
-    class json_literal : public ast
-    {
-    public:
-        json_literal();
-        std::variant<int, bool, std::string, std::nullptr_t> value_;
+        lexer& lexer_;
     };
 
 } // ! jsonparse
