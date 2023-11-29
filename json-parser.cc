@@ -1,6 +1,7 @@
 #include "json-parser.hh"
 #include <cctype>
 #include <cstdlib>
+#include <fstream>
 #include <ostream>
 #include <sstream>
 #include <iostream>
@@ -356,10 +357,22 @@ namespace jsonparse
 
         return res;
     }
+
+    json_value parse_file(std::string file_path)
+    {
+        std::ifstream f(file_path);
+        std::stringstream sstream;
+
+        sstream << f.rdbuf();
+
+        lexer lexer(sstream.str());
+        return parser(lexer).parse_value();
+    }
 }
 
 int main(void)
 {
+    /*
     jsonparse::lexer lexer("[1,2, {\"a\": 12}, 4]");
 
     jsonparse::parser p(lexer);
@@ -372,6 +385,12 @@ int main(void)
     auto obj = std::get<jsonparse::parser::map_type>(arr[2].types_);
 
     std::cout << get<double>(obj["a"]) << std::endl;
+    */
+
+
+    auto val = jsonparse::parse_file("toto.json");
+
+    std::cout << get<double>(val) << std::endl;
 
     return 0;
 }

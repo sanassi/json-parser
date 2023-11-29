@@ -111,4 +111,5 @@ namespace jsonparse
         parser::map_type map_;
     };
 
+    json_value parse_file(std::string file_path);
 } // ! jsonparse
