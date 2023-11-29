@@ -75,9 +75,20 @@ namespace jsonparse
     {
     public:
         json_value() = default;
-        json_value(std::variant<std::vector<json_value>, std::map<std::string, json_value>, double, bool, std::nullptr_t, std::string>);
+        json_value(std::variant<std::vector<json_value>, 
+                                std::map<std::string, json_value>, 
+                                double, 
+                                bool, 
+                                std::nullptr_t, 
+                                std::string>);
 
-        std::variant<std::vector<json_value>, std::map<std::string, json_value>, double, bool, std::nullptr_t, std::string> types_;
+        using obj_type = std::map<std::string, json_value>;
+        std::variant<std::vector<json_value>, 
+                     std::map<std::string, json_value>, 
+                     double, 
+                     bool, 
+                     std::nullptr_t, 
+                     std::string> types_;
     };
 
     class parser

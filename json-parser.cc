@@ -390,7 +390,5 @@ int main(void)
 
     auto val = jsonparse::parse_file("toto.json");
 
-    std::cout << get<double>(val) << std::endl;
-
     return 0;
 }
