@@ -102,7 +102,7 @@ namespace jsonparse
             type = token_type::TRUE;
         else
         {
-            // error
+            throw std::invalid_argument("invalid token: " + res + "\n");
         }
 
         return token(type, res);
@@ -118,7 +118,7 @@ namespace jsonparse
 
             if (!std::isdigit(look_next_char()))
             {
-                // error
+                throw std::invalid_argument("number is not valid\n");
             }
         }
 
@@ -128,7 +128,7 @@ namespace jsonparse
             // leading zeros are not allowed
             if (std::isdigit(look_next_char()))
             {
-                // error
+                throw std::invalid_argument("leading zeros are not allowed\n");
             }
 
             if (look_next_char() != '.')
@@ -276,15 +276,14 @@ namespace jsonparse
     {
         if (lexer_.look_next_token().get_type() != token_type::STRING)
         {
-            // error
+            throw std::invalid_argument("pair key should be a string !!\n");
         }
 
         std::string key = lexer_.next_token().get_lexeme();
 
-
         if (lexer_.look_next_token().get_type() != token_type::COLON)
         {
-            // error
+            throw std::invalid_argument("missing colon <:> !\n");
         }
 
         lexer_.next_token();
@@ -366,7 +365,9 @@ namespace jsonparse
         sstream << f.rdbuf();
 
         lexer lexer(sstream.str());
-        return parser(lexer).parse_value();
+        auto val = parser(lexer).parse_value();
+
+        return val;
     }
 }
 
