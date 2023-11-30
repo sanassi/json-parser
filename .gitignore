@@ -35,3 +35,6 @@
 .cache/
 compile_commands.json
 .clangd
+
+# python
+test/input/__pycache__/
