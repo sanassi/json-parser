@@ -70,6 +70,11 @@ namespace jsonparse
         std::stringstream input_stream;
     };
 
+    /**
+     * Overload pattern to perfom pretty printing
+     */
+    template<class... Ts> struct printer : Ts... { using Ts::operator()...; };
+    template<class... Ts> printer(Ts...) -> printer<Ts...>;
 
     class json_value
     {
@@ -91,9 +96,12 @@ namespace jsonparse
 
         template<typename T>
         T as();
+
+        friend std::ostream& operator<<(std::ostream& os, json_value j);
     };
 
     using obj_type = std::map<std::string, json_value>;
+    using arr_type = std::vector<json_value>;
 
     class parser
     {
@@ -115,6 +123,7 @@ namespace jsonparse
         lexer& lexer_;
     };
 
+    /*
     class json_obj : public json_value
     {
     public:
@@ -125,6 +134,7 @@ namespace jsonparse
     protected:
         parser::map_type map_;
     };
+    */
 
     json_value parse_file(std::string file_path);
 } // ! jsonparse

@@ -65,7 +65,6 @@ namespace jsonparse
         return input_stream.peek();
     }
 
-
     double token::get_value() const
     {
         return value_;
@@ -94,8 +93,9 @@ namespace jsonparse
 
         token_type type;
 
-        if (res == "null")
+        if (res == "null") {
             type = token_type::NONE;
+        }
         else if (res == "false")
             type = token_type::FALSE;
         else if (res == "true")
@@ -315,6 +315,7 @@ namespace jsonparse
         return json_value(map);
     }
 
+    /*
     json_obj::json_obj(parser::map_type map)
         :map_(map)
     {}
@@ -323,6 +324,7 @@ namespace jsonparse
     {
         return map_[key];
     }
+    */
 
     template<typename T>
     T json_value::as()
@@ -342,6 +344,10 @@ namespace jsonparse
             case token_type::NUMBER:
                 res.types_ = lexer_.next_token().get_value();
                 break;
+            case token_type::NONE:
+                res.types_ = nullptr;
+                lexer_.next_token();
+                break;
             case token_type::TRUE:
             case token_type::FALSE:
                 res.types_ = lexer_.next_token().get_type() == token_type::TRUE;
@@ -355,6 +361,35 @@ namespace jsonparse
         }
 
         return res;
+    }
+
+    std::ostream& operator<<(std::ostream& os, json_value j)
+    {
+        std::visit(printer{
+            [&] (double &d) { os << d; },
+            [&] (std::nullptr_t) { os << "null"; },
+            [&] (obj_type map) {
+                os << "{";
+                for (auto it = map.begin(); it != map.end(); it++) {
+                   os << "\"" << (*it).first << "\"" << ": " << (*it).second;
+                   if (std::next(it) != map.end())
+                      os << ",";
+                }
+                os << "}";
+            },
+            [&] (arr_type arr) {
+                os << "[";
+                for (auto it = arr.begin(); it < arr.end(); it++) {
+                   os << *it;
+                   if (it + 1 != arr.end())
+                      os << ",";
+                }
+                os << "]";
+            },
+            [&] (bool b) { os << (b ? "true" : "false"); },
+            [&] (std::string s) { os << "\"" << s << "\""; }
+        }, j.types_);
+        return os;
     }
 
     json_value parse_file(std::string file_path)
@@ -373,12 +408,20 @@ namespace jsonparse
 
 int main(void)
 {
-    auto val = jsonparse::parse_file("toto.json");
+    auto val = jsonparse::parse_file("file.json");
 
+    std::cout << val << std::endl;
+
+    /*
     auto map = val.as<jsonparse::obj_type>();
-    auto str = map["c"].as<std::string>();
+    auto arr = map["d"].as<jsonparse::arr_type>();
 
-    std::cout << str << std::endl;
+    std::cout << map.size() << std::endl;
 
+    for (auto i : arr) 
+    {
+        std::cout << i.as<double>() << std::endl;
+    }
+    */
     return 0;
 }
