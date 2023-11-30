@@ -326,9 +326,9 @@ namespace jsonparse
     }
 
     template<typename T>
-    T get(json_value json)
+    T json_value::as()
     {
-        return std::get<T>(json.types_);
+        return std::get<T>(types_);
     }
 
     json_value parser::parse_value()
@@ -372,23 +372,12 @@ namespace jsonparse
 
 int main(void)
 {
-    /*
-    jsonparse::lexer lexer("[1,2, {\"a\": 12}, 4]");
-
-    jsonparse::parser p(lexer);
-    auto json = p.parse_json().types_;
-
-    auto arr = std::get<std::vector<jsonparse::json_value>>(json);
-
-    std::cout << arr.size() << std::endl;
-
-    auto obj = std::get<jsonparse::parser::map_type>(arr[2].types_);
-
-    std::cout << get<double>(obj["a"]) << std::endl;
-    */
-
-
     auto val = jsonparse::parse_file("toto.json");
+
+    auto map = val.as<jsonparse::obj_type>();
+    auto str = map["c"].as<std::string>();
+
+    std::cout << str << std::endl;
 
     return 0;
 }

@@ -82,14 +82,18 @@ namespace jsonparse
                                 std::nullptr_t, 
                                 std::string>);
 
-        using obj_type = std::map<std::string, json_value>;
         std::variant<std::vector<json_value>, 
                      std::map<std::string, json_value>, 
                      double, 
                      bool, 
                      std::nullptr_t, 
                      std::string> types_;
+
+        template<typename T>
+        T as();
     };
+
+    using obj_type = std::map<std::string, json_value>;
 
     class parser
     {
