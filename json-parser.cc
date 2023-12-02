@@ -408,7 +408,7 @@ namespace jsonparse
 
 int main(void)
 {
-    auto val = jsonparse::parse_file("./test/input/map-nested.json");
+    auto val = jsonparse::parse_file("toto.json");
 
     std::cout << val << std::endl;
 

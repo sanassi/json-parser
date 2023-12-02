@@ -1,4 +1,7 @@
 {
-    "a": [1, 2, "toto"],
-    "b": null
+  "errors": [
+    {
+      "message": "Error 500 when calling monolithe with productId 7197507093"
+    }
+  ]
 }
